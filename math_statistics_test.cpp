@@ -82,8 +82,57 @@ namespace chaos
 
     BOOST_AUTO_TEST_CASE(Math_RollingWindow)
     {
+        chaos::math::statistics::RollingWindow rw(10, true);
+        rw.add(3.5);
+        rw.add(2.9);
+        rw.add(7.21);
+        rw.add(3.666);
+        BOOST_TEST(rw.get_last_value(), 3.66 );
+        rw.add(9.5);
+        rw.add(23);
+        rw.add(12.5);
+        BOOST_TEST(rw.get_percent_buffered(), .7 );
+        rw.add(14.8);
+        rw.add(6.7);
+        double mid = 0;
+        BOOST_CHECK( rw.get_average(mid) == false );
+        rw.add(11.33);
+        BOOST_CHECK( rw.get_average(mid) );
+        BOOST_TEST( mid == 9.5106 );
+        BOOST_TEST( rw.get_min(), -12.5 );
+        BOOST_TEST( rw.get_max(), 23 );
+    }
 
-        BOOST_CHECK( 1 == 1 );
+    BOOST_AUTO_TEST_CASE(Math_RollingWindow_withMoments, * boost::unit_test::tolerance(0.00001))
+    {
+        chaos::math::statistics::RollingWindow rw(10);
+        rw.add(3.5);
+        rw.add(2.9);
+        rw.add(7.21);
+        rw.add(3.666);
+        BOOST_TEST(rw.get_last_value(), 3.66 );
+        rw.add(9.5);
+        rw.add(23);
+        rw.add(12.5);
+        BOOST_TEST(rw.get_percent_buffered(), .7 );
+        rw.add(14.8);
+        rw.add(6.7);
+        double mid = 0, std = 0, sk = 0, ku = 0, mm = 0;
+        BOOST_CHECK( rw.get_average(mid) == false );
+        rw.add(11.33);
+        BOOST_CHECK( rw.get_average(mid) );
+        BOOST_CHECK( rw.get_stdev(std) );
+        BOOST_CHECK( rw.get_skew(sk) );
+        BOOST_CHECK( rw.get_kurtosis(ku) );
+        BOOST_CHECK( rw.get_min_max_vol(mm) );
+        BOOST_TEST( mid == 9.5106 );
+        BOOST_TEST( std == 5.91073 );
+        BOOST_TEST( sk == .917789 );
+        BOOST_TEST( ku == .150692);
+        BOOST_TEST( mm, 5.91073 );
+        BOOST_TEST( rw.get_min(), -12.5 );
+        BOOST_TEST( rw.get_max(), 23 );
+
     }
 
     BOOST_AUTO_TEST_SUITE_END()
